@@ -19,7 +19,15 @@ const communcationLogConsumer = require("./src/recievers/CommunicationLog.sub")
 const Receive = require("./src/rabbit/Recieve.class");
 
 const app = express();
-app.use(cors())
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://your-frontend.vercel.app'
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(morgan('dev'))
 
