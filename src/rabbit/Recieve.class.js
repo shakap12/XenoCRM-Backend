@@ -7,27 +7,37 @@ class Receive {
   }
 
   execute(consumer) {
-    amqp.connect({
+    const rabbitUrl = process.env.RABBIT_URL_AWS;
+
+    const connectionOptions = rabbitUrl || {
       protocol: 'amqp',
       hostname: '127.0.0.1',
       port: 5672,
       username: 'guest',
       password: 'guest',
-      frameMax: 131072  // ✅ Set this ≥ 8192
-    }, (error, connection) => {
+    };
+
+    console.log("🐇 Connecting to RabbitMQ:", rabbitUrl || "localhost");
+
+    this.rabbit.connect(connectionOptions, (error, connection) => {
       if (error) {
-        throw error;
+        console.error("❌ RabbitMQ connection failed:", error.message);
+        return;
       }
+
       connection.createChannel((error1, channel) => {
         if (error1) {
-          throw error1;
+          console.error("❌ Failed to create channel:", error1.message);
+          return;
         }
-        channel.assertQueue(this.queueName, {
-          durable: true,
-        });
+
+        channel.assertQueue(this.queueName, { durable: true });
+
         channel.consume(this.queueName, consumer, {
           noAck: true,
         });
+
+        console.log(`✅ RabbitMQ Connected. Listening on queue: ${this.queueName}`);
       });
     });
   }
