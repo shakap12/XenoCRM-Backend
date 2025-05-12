@@ -20,14 +20,24 @@ const Receive = require("./src/rabbit/Recieve.class");
 
 const app = express();
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://your-frontend.vercel.app'
+  'http://localhost:3000', // local React dev server
+  'https://xeno-crm-frontend-swart.vercel.app' // live frontend
 ];
 
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(bodyParser.json());
 app.use(morgan('dev'))
 
